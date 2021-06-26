@@ -57,7 +57,7 @@ public class Main {
                 } catch (JsonProcessingException e){
                     e.printStackTrace();
                 }
-
+                System.exit(0);
             } else {
                 //Now read the file and check if it is json file
                 try {
@@ -81,85 +81,85 @@ public class Main {
 
     //Now validate the property file
         //Check if file structure is correct
-    PropertyFile propertyFile = new PropertyFile();
-    if (filedata!=null && filedata!=""){
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            propertyFile = objectMapper.readValue(filedata,PropertyFile.class);
-            System.out.println("Validated Property File \n");
-            //System.out.println("NOW PRINTING CONTENT OF JSON FILE \n");
-            //propertyFile.printValues();
-        }catch (IOException e){
-            System.out.println("Incorrect JSON File Structure for Property File \n");
-            e.printStackTrace();
+        PropertyFile propertyFile = new PropertyFile();
+        if (filedata!=null && filedata!=""){
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                propertyFile = objectMapper.readValue(filedata,PropertyFile.class);
+                System.out.println("Validated Property File \n");
+                //System.out.println("NOW PRINTING CONTENT OF JSON FILE \n");
+                //propertyFile.printValues();
+            }catch (IOException e){
+                System.out.println("Incorrect JSON File Structure for Property File \n");
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("No content found in JSON property file");
         }
-    } else {
-        System.out.println("No content found in JSON property file");
-    }
 
-    //Check if files are present in the location and files are EXCEL type
-    boolean filesPresent = true;
-    File f = new File(propertyFile.getPreXLSFile());
-    if (!f.exists()){
-        filesPresent = false;
-        System.out.println("Pre Migration SFL XLS file does not exist "+propertyFile.getPreXLSFile()+"\n");
-    }
-    try {
-        Workbook workbook = WorkbookFactory.create(f);
-    } catch (Exception e){
-        filesPresent = false;
-        System.out.println("Pre Migration SFL XLS file is not of valid type "+propertyFile.getPreXLSFile()+"\n");
-    }
-    f = new File(propertyFile.getPostXLSFileSFL());
-    if (!f.exists()){
-        filesPresent = false;
-        System.out.println("Post Migration SFL XLS file does not exist "+propertyFile.getPostXLSFileSFL()+"\n");
-    }
-    try {
-        Workbook workbook = WorkbookFactory.create(f);
-    } catch (Exception e){
-        filesPresent = false;
-        System.out.println("Post Migration SFL XLS file is not of valid type "+propertyFile.getPostXLSFileSFL()+"\n");
-    }
-    f = new File(propertyFile.getPostXLSFileNew());
-    if (!f.exists()){
-        filesPresent = false;
-        System.out.println("Post Migration"+propertyFile.getPostXLSFileNew()+" XLS file does not exist \n");
-    }
-    try {
-        Workbook workbook = WorkbookFactory.create(f);
-    } catch (Exception e){
-        filesPresent = false;
-        System.out.println("Post Migration "+propertyFile.getPostXLSFileNew()+" XLS file is not of valid type \n");
-    }
-    if (!filesPresent){
-        System.out.println("Necessary XLS files for processing not present or not of valid XLS types - XLS, XLSX");
-        System.exit(0);
-    } else {
-        System.out.println("Validated Presence of necessary source XLS files");
-    }
-    // Create Output Excel File
-    f = new File(propertyFile.getOutputXLSFileName());
-    if (!f.exists()){
-        try {
-            f.createNewFile();
-        } catch (Exception e){
-            System.out.println("Unable to create output XLS file "+propertyFile.getOutputXLSFileName()+"\n");
-            System.exit(0);
+        //Check if files are present in the location and files are EXCEL type
+        boolean filesPresent = true;
+        File f = new File(propertyFile.getPreXLSFile());
+        if (!f.exists()){
+            filesPresent = false;
+            System.out.println("Pre Migration SFL XLS file does not exist "+propertyFile.getPreXLSFile()+"\n");
         }
-    }
-    //Create Output Text Log File
-    f = new File(propertyFile.getResultFileName());
-    if (!f.exists()){
         try {
-            f.createNewFile();
+            Workbook workbook = WorkbookFactory.create(f);
         } catch (Exception e){
-            System.out.println("Unable to create output log file "+propertyFile.getResultFileName()+"\n");
-            System.exit(0);
+            filesPresent = false;
+            System.out.println("Pre Migration SFL XLS file is not of valid type "+propertyFile.getPreXLSFile()+"\n");
         }
-    }
+        f = new File(propertyFile.getPostXLSFileSFL());
+        if (!f.exists()){
+            filesPresent = false;
+            System.out.println("Post Migration SFL XLS file does not exist "+propertyFile.getPostXLSFileSFL()+"\n");
+        }
+        try {
+            Workbook workbook = WorkbookFactory.create(f);
+        } catch (Exception e){
+            filesPresent = false;
+            System.out.println("Post Migration SFL XLS file is not of valid type "+propertyFile.getPostXLSFileSFL()+"\n");
+        }
+        f = new File(propertyFile.getPostXLSFileNew());
+        if (!f.exists()){
+            filesPresent = false;
+            System.out.println("Post Migration"+propertyFile.getPostXLSFileNew()+" XLS file does not exist \n");
+        }
+        try {
+            Workbook workbook = WorkbookFactory.create(f);
+        } catch (Exception e){
+            filesPresent = false;
+            System.out.println("Post Migration "+propertyFile.getPostXLSFileNew()+" XLS file is not of valid type \n");
+        }
+        if (!filesPresent){
+            System.out.println("Necessary XLS files for processing not present or not of valid XLS types - XLS, XLSX");
+            System.exit(0);
+        } else {
+            System.out.println("Validated Presence of necessary source XLS files");
+        }
+        // Create Output Excel File
+        f = new File(propertyFile.getOutputXLSFileName());
+        if (!f.exists()){
+            try {
+                f.createNewFile();
+            } catch (Exception e){
+                System.out.println("Unable to create output XLS file "+propertyFile.getOutputXLSFileName()+"\n");
+                System.exit(0);
+            }
+        }
+        //Create Output Text Log File
+        f = new File(propertyFile.getResultFileName());
+        if (!f.exists()){
+            try {
+                f.createNewFile();
+            } catch (Exception e){
+                System.out.println("Unable to create output log file "+propertyFile.getResultFileName()+"\n");
+                System.exit(0);
+            }
+        }
     //Now Run Main Check Routine
-    //
+        //
 
     //Return File Status and Message on Where output present
     //
