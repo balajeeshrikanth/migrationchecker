@@ -2,34 +2,36 @@ package com.stonex.gpp.definition;
 
 import org.apache.poi.ss.util.CellReference;
 
-import javax.swing.*;
-
 public class SheetDefinition {
     private String sheetName;
     private boolean validate;
-    private int maxColIdx;
+    private String maxColAlpha;
     private int headerRowNo;
+    private boolean directRowCheck;
     private boolean addPrefixForKey;
     private boolean skipForSFL;
     private String [] lookupKeyColumns;
     private String [] skipColumns;
     private String [] warningColumns;
     private String [] zeroColumnsSFL;
+    private String [] prefixColumns;
 
     public SheetDefinition() {
     }
 
-    public SheetDefinition(String sheetName, boolean validate, int maxColIdx, int headerRowNo, boolean addPrefixForKey, boolean skipForSFL, String[] lookupKeyColumns, String[] skipColumns, String[] warningColumns, String[] zeroColumnsSFL) {
+    public SheetDefinition(String sheetName, boolean validate, String maxColAlpha, int headerRowNo, boolean directRowCheck, boolean addPrefixForKey, boolean skipForSFL, String[] lookupKeyColumns, String[] skipColumns, String[] warningColumns, String[] zeroColumnsSFL, String[] prefixColumns) {
         this.sheetName = sheetName;
         this.validate = validate;
-        this.maxColIdx = maxColIdx;
+        this.maxColAlpha = maxColAlpha;
         this.headerRowNo = headerRowNo;
+        this.directRowCheck = directRowCheck;
         this.addPrefixForKey = addPrefixForKey;
         this.skipForSFL = skipForSFL;
         this.lookupKeyColumns = lookupKeyColumns;
         this.skipColumns = skipColumns;
         this.warningColumns = warningColumns;
         this.zeroColumnsSFL = zeroColumnsSFL;
+        this.prefixColumns = prefixColumns;
     }
 
     public String getSheetName() {
@@ -48,12 +50,12 @@ public class SheetDefinition {
         this.validate = validate;
     }
 
-    public int getMaxColIdx() {
-        return maxColIdx;
+    public String getMaxColAlpha() {
+        return maxColAlpha;
     }
 
-    public void setMaxColIdx(int maxColIdx) {
-        this.maxColIdx = maxColIdx;
+    public void setMaxColAlpha(String maxColAlpha) {
+        this.maxColAlpha = maxColAlpha;
     }
 
     public int getHeaderRowNo() {
@@ -62,6 +64,14 @@ public class SheetDefinition {
 
     public void setHeaderRowNo(int headerRowNo) {
         this.headerRowNo = headerRowNo;
+    }
+
+    public boolean isDirectRowCheck() {
+        return directRowCheck;
+    }
+
+    public void setDirectRowCheck(boolean directRowCheck) {
+        this.directRowCheck = directRowCheck;
     }
 
     public boolean isAddPrefixForKey() {
@@ -112,30 +122,42 @@ public class SheetDefinition {
         this.zeroColumnsSFL = zeroColumnsSFL;
     }
 
+    public String[] getPrefixColumns() {
+        return prefixColumns;
+    }
+
+    public void setPrefixColumns(String[] prefixColumns) {
+        this.prefixColumns = prefixColumns;
+    }
+
     public void setTemplateValues(String sheetName){
         this.sheetName = sheetName;
         this.validate = true;
-        this.maxColIdx = 5;
+        this.maxColAlpha = "E";
         this.headerRowNo = 1;
+        this.directRowCheck = true;
         this.addPrefixForKey = true;
         this.skipForSFL = false;
         this.lookupKeyColumns = new String[5];
         this.skipColumns = new String[5];
         this.warningColumns = new String[5];
         this.zeroColumnsSFL = new String[5];
-        for (int i=0;i<maxColIdx;i++){
+        this.prefixColumns = new String[5];
+        for (int i=0;i<5;i++){
             this.lookupKeyColumns[i]= CellReference.convertNumToColString(i);
             this.skipColumns[i] = CellReference.convertNumToColString(i);
             this.warningColumns [i] = CellReference.convertNumToColString(i);
             this.zeroColumnsSFL [i] = CellReference.convertNumToColString(i);
+            this.prefixColumns [i] = CellReference.convertNumToColString(i);
         }
     }
 
     public void printValues(SheetDefinition sheetDefinition){
         System.out.println(sheetDefinition.getSheetName()+"\n");
         System.out.println(sheetDefinition.isValidate()+"\n");
-        System.out.println(sheetDefinition.getMaxColIdx()+"\n");
+        System.out.println(sheetDefinition.getMaxColAlpha()+"\n");
         System.out.println(sheetDefinition.getHeaderRowNo()+"\n");
+        System.out.println(sheetDefinition.isDirectRowCheck()+"\n");
         System.out.println(sheetDefinition.isAddPrefixForKey()+"\n");
         System.out.println(sheetDefinition.isSkipForSFL()+"\n");
 

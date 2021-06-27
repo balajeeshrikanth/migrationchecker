@@ -2,7 +2,10 @@ package com.stonex.gpp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stonex.gpp.definition.AppError;
+import com.stonex.gpp.definition.ErrorResponse;
 import com.stonex.gpp.definition.PropertyFile;
+import com.stonex.gpp.utils.MigrationComparator;
 import org.apache.poi.ooxml.POIXMLDocument;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -14,7 +17,7 @@ import java.util.Scanner;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args)  {
 	// Get Arguments and Help with syntax
         String osname = System.getProperty("os.name").toUpperCase(Locale.ENGLISH);
         if (osname==null || osname ==""){
@@ -92,9 +95,11 @@ public class Main {
             }catch (IOException e){
                 System.out.println("Incorrect JSON File Structure for Property File \n");
                 e.printStackTrace();
+                System.exit(0);
             }
         } else {
             System.out.println("No content found in JSON property file");
+            System.exit(0);
         }
 
         //Check if files are present in the location and files are EXCEL type
@@ -106,6 +111,7 @@ public class Main {
         }
         try {
             Workbook workbook = WorkbookFactory.create(f);
+            workbook.close();
         } catch (Exception e){
             filesPresent = false;
             System.out.println("Pre Migration SFL XLS file is not of valid type "+propertyFile.getPreXLSFile()+"\n");
@@ -117,6 +123,7 @@ public class Main {
         }
         try {
             Workbook workbook = WorkbookFactory.create(f);
+            workbook.close();
         } catch (Exception e){
             filesPresent = false;
             System.out.println("Post Migration SFL XLS file is not of valid type "+propertyFile.getPostXLSFileSFL()+"\n");
@@ -128,6 +135,7 @@ public class Main {
         }
         try {
             Workbook workbook = WorkbookFactory.create(f);
+            workbook.close();
         } catch (Exception e){
             filesPresent = false;
             System.out.println("Post Migration "+propertyFile.getPostXLSFileNew()+" XLS file is not of valid type \n");
@@ -160,8 +168,45 @@ public class Main {
         }
     //Now Run Main Check Routine
         //
-
+        MigrationComparator migrationComparator = new MigrationComparator();
+        ErrorResponse errorResponse = new ErrorResponse();
+        try {
+            errorResponse = migrationComparator.compareFiles(propertyFile);
+        } catch (IOException e){
+            System.out.println("Unable to perform comparison due to Sheet Exceptions \n");
+            e.printStackTrace();
+        }
     //Return File Status and Message on Where output present
     //
+        System.out.println("Output XLS File created "+propertyFile.getOutputXLSFileName());
+        if (errorResponse.isResult()){
+            System.out.println("COMPARISON SUCCESSFUL");
+            if (errorResponse.getAppErrorList().size()>0){
+                System.out.println("Warnings found. Review Log File "+propertyFile.getResultFileName());
+            }
+        } else {
+            System.out.println("COMPARISON FAILED");
+            System.out.println("Review Log File "+propertyFile.getResultFileName());
+        }
+        try {
+            File outFile = new File(propertyFile.getResultFileName());
+            FileWriter myWriter = new FileWriter(propertyFile.getResultFileName());
+            AppError appError = new AppError();
+            String resultline = "";
+            for (int i=0;i<errorResponse.getAppErrorList().size();i++){
+                appError = errorResponse.getAppErrorList().get(i);
+                resultline = "Error / Warning Type: "+appError.getErrorType()+" Code: "+appError.getErrorCode()+" Sheet: "+appError.getErrorSheet()+" Row No: "+appError.getErrorRow()+" Col No - Name: "+appError.getErrorCol()+" Reason: "+appError.getErrorString()+"\n";
+                myWriter.write(resultline);
+            }
+            myWriter.close();
+        } catch (IOException e){
+            e.printStackTrace();
+            System.out.println("Unable to create output file - so dumping results on screen\n");
+            AppError appError = new AppError();
+            for (int i=0;i<errorResponse.getAppErrorList().size();i++){
+                appError = errorResponse.getAppErrorList().get(i);
+                System.out.println("Error/Warning Type: "+appError.getErrorType()+" Code: "+appError.getErrorCode()+" Sheet: "+appError.getErrorSheet()+" Row No: "+appError.getErrorRow()+" Col No - Name: "+appError.getErrorCol()+" Reason: "+appError.getErrorString());
+            }
+        }
     }
 }
