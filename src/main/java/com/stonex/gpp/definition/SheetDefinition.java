@@ -15,11 +15,12 @@ public class SheetDefinition {
     private String [] warningColumns;
     private String [] zeroColumnsSFL;
     private String [] prefixColumns;
+    private MergeColumn [] mergeColumns;
 
     public SheetDefinition() {
     }
 
-    public SheetDefinition(String sheetName, boolean validate, String maxColAlpha, int headerRowNo, boolean directRowCheck, boolean addPrefixForKey, boolean skipForSFL, String[] lookupKeyColumns, String[] skipColumns, String[] warningColumns, String[] zeroColumnsSFL, String[] prefixColumns) {
+    public SheetDefinition(String sheetName, boolean validate, String maxColAlpha, int headerRowNo, boolean directRowCheck, boolean addPrefixForKey, boolean skipForSFL, String[] lookupKeyColumns, String[] skipColumns, String[] warningColumns, String[] zeroColumnsSFL, String[] prefixColumns, MergeColumn[] mergeColumns) {
         this.sheetName = sheetName;
         this.validate = validate;
         this.maxColAlpha = maxColAlpha;
@@ -32,6 +33,7 @@ public class SheetDefinition {
         this.warningColumns = warningColumns;
         this.zeroColumnsSFL = zeroColumnsSFL;
         this.prefixColumns = prefixColumns;
+        this.mergeColumns = mergeColumns;
     }
 
     public String getSheetName() {
@@ -130,6 +132,14 @@ public class SheetDefinition {
         this.prefixColumns = prefixColumns;
     }
 
+    public MergeColumn[] getMergeColumns() {
+        return mergeColumns;
+    }
+
+    public void setMergeColumns(MergeColumn[] mergeColumns) {
+        this.mergeColumns = mergeColumns;
+    }
+
     public void setTemplateValues(String sheetName){
         this.sheetName = sheetName;
         this.validate = true;
@@ -143,12 +153,17 @@ public class SheetDefinition {
         this.warningColumns = new String[5];
         this.zeroColumnsSFL = new String[5];
         this.prefixColumns = new String[5];
+        this.mergeColumns = new MergeColumn[5];
+        MergeColumn mergeColumn = new MergeColumn("XX",false);
         for (int i=0;i<5;i++){
             this.lookupKeyColumns[i]= CellReference.convertNumToColString(i);
             this.skipColumns[i] = CellReference.convertNumToColString(i);
             this.warningColumns [i] = CellReference.convertNumToColString(i);
             this.zeroColumnsSFL [i] = CellReference.convertNumToColString(i);
             this.prefixColumns [i] = CellReference.convertNumToColString(i);
+            this. mergeColumns [i] = mergeColumn;
+//            this.mergeColumns [i].setColumn( mergeColumn.getColumn());
+//            this.mergeColumns [i].setPrefixed(mergeColumn.isPrefixed());
         }
     }
 

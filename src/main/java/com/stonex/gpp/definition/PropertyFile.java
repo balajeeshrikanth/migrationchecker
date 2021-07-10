@@ -10,6 +10,7 @@ public class PropertyFile {
     private String postXLSFileSFL;
     private String postXLSFileNew;
     private String outputXLSFileName;
+    private String mergeXLSFileName;
     private String resultFileName;
     private String prefixForPost;//Whether key will be appended with -SPS or SFG
     private List<SheetDefinition> sheetDetails;
@@ -18,13 +19,14 @@ public class PropertyFile {
         sheetDetails = new ArrayList<SheetDefinition>();
     }
 
-    public PropertyFile(boolean sfgmigration, boolean spsmigration, String preXLSFile, String postXLSFileSFL, String postXLSFileNew, String outputXLSFileName, String resultFileName, String prefixForPost, List<SheetDefinition> sheetDetails) {
+    public PropertyFile(boolean sfgmigration, boolean spsmigration, String preXLSFile, String postXLSFileSFL, String postXLSFileNew, String outputXLSFileName, String mergeXLSFileName, String resultFileName, String prefixForPost, List<SheetDefinition> sheetDetails) {
         this.sfgmigration = sfgmigration;
         this.spsmigration = spsmigration;
         this.preXLSFile = preXLSFile;
         this.postXLSFileSFL = postXLSFileSFL;
         this.postXLSFileNew = postXLSFileNew;
         this.outputXLSFileName = outputXLSFileName;
+        this.mergeXLSFileName = mergeXLSFileName;
         this.resultFileName = resultFileName;
         this.prefixForPost = prefixForPost;
         this.sheetDetails = sheetDetails;
@@ -78,6 +80,14 @@ public class PropertyFile {
         this.outputXLSFileName = outputXLSFileName;
     }
 
+    public String getMergeXLSFileName() {
+        return mergeXLSFileName;
+    }
+
+    public void setMergeXLSFileName(String mergeXLSFileName) {
+        this.mergeXLSFileName = mergeXLSFileName;
+    }
+
     public String getResultFileName() {
         return resultFileName;
     }
@@ -106,9 +116,10 @@ public class PropertyFile {
         this.sfgmigration = false;
         this.spsmigration = true;
         this.preXLSFile = "presheetOLD.xls";
-        this.postXLSFileSFL = "postsheetSFL.xls";
-        this.postXLSFileNew = "postsheetNEW.xls";
-        this.outputXLSFileName = "outputXLS.xls";
+        this.postXLSFileSFL = "postsheetSFL.xlsx";
+        this.postXLSFileNew = "postsheetNEW.xlsx";
+        this.outputXLSFileName = "outputXLS.xlsx";
+        this.mergeXLSFileName ="mergeXLS.xlsx";
         this.resultFileName = "resultfile.txt";
         this.prefixForPost = "-SPS";
         for (int i=0;i<5;i++){

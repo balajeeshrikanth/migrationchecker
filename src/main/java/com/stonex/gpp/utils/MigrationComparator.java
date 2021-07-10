@@ -59,26 +59,38 @@ public class MigrationComparator {
         String keyPrefix = propertyFile.getPrefixForPost();
         //Open File
         FileInputStream preXLSFile = new FileInputStream(new File(this.propertyFile.getPreXLSFile()));
-        FileInputStream postSFLXLSFile = new FileInputStream(new File(this.propertyFile.getPostXLSFileSFL()));
         FileInputStream postNewXLSFile = new FileInputStream(new File(this.propertyFile.getPostXLSFileNew()));
+
 
         //Now Workbook
         XSSFWorkbook preXLSWorkbook = new XSSFWorkbook(preXLSFile);
-        XSSFWorkbook postSFLXLSWorkbook = new XSSFWorkbook(postSFLXLSFile);
         XSSFWorkbook postNewXLSWorkbook = new XSSFWorkbook(postNewXLSFile);
         XSSFWorkbook resultWorkbook = new XSSFWorkbook();
+        XSSFWorkbook mergeWorkbook = new XSSFWorkbook();
         CellStyle warnStyle = resultWorkbook.createCellStyle();
         warnStyle.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
         warnStyle.setFillPattern(FillPatternType.BIG_SPOTS);
+        CellStyle warnStyleMerge = mergeWorkbook.createCellStyle();
+        warnStyleMerge.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
+        warnStyleMerge.setFillPattern(FillPatternType.BIG_SPOTS);
         CellStyle errorStyle = resultWorkbook.createCellStyle();
         errorStyle.setFillBackgroundColor(IndexedColors.RED.getIndex());
         errorStyle.setFillPattern(FillPatternType.BIG_SPOTS);
+        CellStyle errorStyleMerge = mergeWorkbook.createCellStyle();
+        errorStyleMerge.setFillBackgroundColor(IndexedColors.RED.getIndex());
+        errorStyleMerge.setFillPattern(FillPatternType.BIG_SPOTS);
         CellStyle skipStyle = resultWorkbook.createCellStyle();
         skipStyle.setFillBackgroundColor(IndexedColors.LIGHT_BLUE.getIndex());
         skipStyle.setFillPattern(FillPatternType.BIG_SPOTS);
+        CellStyle skipStyleMerge = mergeWorkbook.createCellStyle();
+        skipStyleMerge.setFillBackgroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+        skipStyleMerge.setFillPattern(FillPatternType.BIG_SPOTS);
         CellStyle ignoreStyle = resultWorkbook.createCellStyle();
         ignoreStyle.setFillBackgroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
         ignoreStyle.setFillPattern(FillPatternType.BIG_SPOTS);
+        CellStyle ignoreStyleMerge = mergeWorkbook.createCellStyle();
+        ignoreStyleMerge.setFillBackgroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        ignoreStyleMerge.setFillPattern(FillPatternType.BIG_SPOTS);
         FormulaEvaluator formulaEvaluator = preXLSWorkbook.getCreationHelper().createFormulaEvaluator();
         //Then we have start iterating by worksheets specified in the JSON property file.
         List<SheetDefinition> sheetDefinitionList = propertyFile.getSheetDetails();
@@ -108,8 +120,8 @@ public class MigrationComparator {
             XSSFSheet postNewSheet;
             try {
                 preSheet = preXLSWorkbook.getSheet(sheetDefinition.getSheetName());
-                postSFLSheet = postSFLXLSWorkbook.getSheet(sheetDefinition.getSheetName());
                 postNewSheet = postNewXLSWorkbook.getSheet(sheetDefinition.getSheetName());
+
             } catch (Exception e){
                 //If the sheet is missing in any one the workbooks skip that comparison
                 System.out.println("Sheet Not present in all Pre and Post sheets for Sheet \n" + sheetDefinition.getSheetName());
@@ -120,6 +132,7 @@ public class MigrationComparator {
             }
             System.out.println("Now Processing Sheet "+sheetDefinition.getSheetName()+"\n");
             XSSFSheet resultSheet = resultWorkbook.createSheet(sheetDefinition.getSheetName());
+            XSSFSheet mergeSheet = mergeWorkbook.createSheet(sheetDefinition.getSheetName());
             //Get Header Row from PreSheet
             // Excel Rows and Columns start at Zero and hence reduce setting by 1
             int headerRowNo = sheetDefinition.getHeaderRowNo() - 1;
@@ -147,13 +160,20 @@ public class MigrationComparator {
 
             //Write Header Row in Result sheet
             int resultRowNo = 0;
+            int mergeRowNo = 0;
             XSSFRow resultRow = resultSheet.createRow(resultRowNo);
+            XSSFRow mergeRow = mergeSheet.createRow(mergeRowNo);
+            XSSFCell mergeHeaderCol = mergeRow.createCell(0);
+            mergeHeaderCol.setCellValue("MERGED COLUMNS");
             for (int i=0;i<headerMap.size();i++){
                 XSSFCell xssfCell = resultRow.createCell(i);
+                XSSFCell mergeCell = mergeRow.createCell(i+1);
                 try {
                     xssfCell.setCellValue(headerMap.get(CellReference.convertNumToColString(i)));
+                    mergeCell.setCellValue(headerMap.get(CellReference.convertNumToColString(i)));
                 } catch (Exception e){
                     xssfCell.setCellValue("NOHEADERFOUND");
+                    mergeCell.setCellValue("NOHEADERFOUND");
                 }
             }
             // Now write Header Row in outputsheet
@@ -293,38 +313,100 @@ public class MigrationComparator {
                         AppError appError = new AppError("E098","E","UNABLE TO COMPARE FOR KEY "+keys,propertyFile.getPostXLSFileNew(),sheetDefinition.getSheetName(),"",String.valueOf(rowNo));
                         errorResponse.getAppErrorList().add(appError);
                         resultRowNo++;
+                        mergeRowNo++;
                         XSSFRow skippedRow = resultSheet.createRow(resultRowNo);
+                        XSSFRow mergeSkipRow = mergeSheet.createRow(mergeRowNo);
                         for (int n=0;n<rowMapValuesForPre.size();n++){
                             XSSFCell xssfCellSkip = skippedRow.createCell(n);
+                            XSSFCell mergeCellSkip = mergeSkipRow.createCell(n+1);
                             try {
                                 xssfCellSkip.setCellValue(rowMapValuesForPre.get(CellReference.convertNumToColString(n)));
                                 xssfCellSkip.setCellStyle(warnStyle);
+                                mergeCellSkip.setCellValue(rowMapValuesForPre.get(CellReference.convertNumToColString(n)));
+                                mergeCellSkip.setCellStyle(warnStyleMerge);
+
                             } catch (Exception e){
+                                e.printStackTrace();
                                 System.out.println("Unable to write a skipped row to Excel");
                             }
                         }
                     }
                 }
                 resultRowNo++;
+                mergeRowNo++;
                 XSSFRow resultRowPre = resultSheet.createRow(resultRowNo);
+                XSSFRow mergeRowPre = mergeSheet.createRow(mergeRowNo);
                 resultRowNo++;
+                mergeRowNo++;
                 XSSFRow resultRowPost = resultSheet.createRow(resultRowNo);
+                XSSFRow mergeRowPost = mergeSheet.createRow(mergeRowNo);
                 for (int m=0; m<rowMapValuesForPre.size();m++){
                     //Write the two rows of Pre and Post in output XLS
                     //First PRE
                     XSSFCell xssfCellPre = resultRowPre.createCell(m);
+                    XSSFCell mergeCellPre = mergeRowPre.createCell(m+1);
                     try {
                         xssfCellPre.setCellValue(rowMapValuesForPre.get(CellReference.convertNumToColString(m)));
+                        mergeCellPre.setCellValue(rowMapValuesForPre.get(CellReference.convertNumToColString(m)));
                     } catch (Exception e){
                         xssfCellPre.setCellValue("NODATA##");
+                        mergeCellPre.setCellValue("NODATA##");
+                    }
+                    //Now for Merge Columns combine them for Pre
+                    String preString = "";
+                    if (sheetDefinition.getMergeColumns().length>0){
+                        for (int p=0;p<sheetDefinition.getMergeColumns().length;p++){
+                            String mergeCol = sheetDefinition.getMergeColumns()[p].getColumn();
+                            if (rowMapValuesForPre.get(mergeCol)!=null){
+                                preString = preString.concat(rowMapValuesForPre.get(mergeCol));
+                            }
+                        }
+                    }
+                    if (preString!=null && preString !=""){
+                        XSSFCell mergeFirstCellPre = mergeRowPre.createCell(0);
+                        mergeFirstCellPre.setCellValue(preString);
                     }
                     //Next POST
                     XSSFCell xssfCellPost = resultRowPost.createCell(m);
+                    XSSFCell mergeCellPost = mergeRowPost.createCell(m+1);
                     try {
                         xssfCellPost.setCellValue(rowMapValuesForPost.get(CellReference.convertNumToColString(m)));
+                        mergeCellPost.setCellValue(rowMapValuesForPost.get(CellReference.convertNumToColString(m)));
                     } catch (Exception e){
                         xssfCellPost.setCellValue("NODATA##");
+                        mergeCellPost.setCellValue("NODATA##");
                     }
+                    //Now for Merge Columns combine them for Post
+                    String postString = "";
+                    if (sheetDefinition.getMergeColumns().length>0){
+                        for (int p=0;p<sheetDefinition.getMergeColumns().length;p++){
+                            String mergeCol = sheetDefinition.getMergeColumns()[p].getColumn();
+                            if (rowMapValuesForPost.get(mergeCol)!=null){
+                                if (sheetDefinition.getMergeColumns()[p].isPrefixed()){
+                                    String withoutPrefix="";
+                                    int prefixPos = rowMapValuesForPost.get(mergeCol).indexOf(keyPrefix);
+                                    if (prefixPos>0){
+                                        withoutPrefix = postString.concat(rowMapValuesForPost.get(mergeCol)).substring(0,prefixPos);
+                                    } else {
+                                        withoutPrefix = postString.concat(rowMapValuesForPost.get(mergeCol));
+                                    }
+                                    postString = postString.concat(withoutPrefix);
+                                } else {
+                                    postString = postString.concat(rowMapValuesForPost.get(mergeCol));
+                                }
+                            }
+                        }
+                    }
+                    if (postString!=null && postString!=""){
+                        XSSFCell mergeFirstCellPost = mergeRowPost.createCell(0);
+                        mergeFirstCellPost.setCellValue(postString);
+                        if (preString!=null && postString !=null){
+                            if (!preString.trim().equalsIgnoreCase(postString.trim())){
+                                mergeFirstCellPost.setCellStyle(errorStyleMerge);
+                            }
+                        }
+                    }
+
                     //Check if Comparison has to be skipped for that Column
                     if (ArrayUtils.contains(sheetDefinition.getSkipColumns(),CellReference.convertNumToColString(m))){
 //                            System.out.println("Skipping Column for "+"Sheet Name "+sheetDefinition.getSheetName()+" Pre Sheet Row No "+rowNo+" Col No "+CellReference.convertNumToColString(m)+" ColName "+headerMap.get(CellReference.convertNumToColString(m))+"\n");
@@ -365,13 +447,18 @@ public class MigrationComparator {
         } catch (Exception e){
             System.out.println("Unable to create Result XLS File");
         }
+    //Write Merge Workbook
+        try{
+            FileOutputStream mergeXLSStream  = new FileOutputStream(this.propertyFile.getMergeXLSFileName());
+            mergeWorkbook.write(mergeXLSStream);
+        } catch (Exception e){
+            System.out.println("Unable to create Merge XLS File");
+        }
     //Close workbooks
     preXLSWorkbook.close();
-    postSFLXLSWorkbook.close();
     postNewXLSWorkbook.close();
     //Close Streams
     preXLSFile.close();
-    postSFLXLSFile.close();
     postNewXLSFile.close();
     return  errorResponse;
 

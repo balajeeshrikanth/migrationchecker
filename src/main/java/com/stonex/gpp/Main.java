@@ -116,17 +116,22 @@ public class Main {
             filesPresent = false;
             System.out.println("Pre Migration SFL XLS file is not of valid type "+propertyFile.getPreXLSFile()+"\n");
         }
-        f = new File(propertyFile.getPostXLSFileSFL());
-        if (!f.exists()){
-            filesPresent = false;
-            System.out.println("Post Migration SFL XLS file does not exist "+propertyFile.getPostXLSFileSFL()+"\n");
+        if (propertyFile.getPostXLSFileSFL().equals("")){
+            propertyFile.setPostXLSFileSFL(null);
         }
-        try {
-            Workbook workbook = WorkbookFactory.create(f);
-            workbook.close();
-        } catch (Exception e){
-            filesPresent = false;
-            System.out.println("Post Migration SFL XLS file is not of valid type "+propertyFile.getPostXLSFileSFL()+"\n");
+        if (propertyFile.getPostXLSFileSFL()!=null){
+            f = new File(propertyFile.getPostXLSFileSFL());
+            if (!f.exists()){
+                filesPresent = false;
+                System.out.println("Post Migration SFL XLS file does not exist "+propertyFile.getPostXLSFileSFL()+"\n");
+            }
+            try {
+                Workbook workbook = WorkbookFactory.create(f);
+                workbook.close();
+            } catch (Exception e){
+                filesPresent = false;
+                System.out.println("Post Migration SFL XLS file is not of valid type "+propertyFile.getPostXLSFileSFL()+"\n");
+            }
         }
         f = new File(propertyFile.getPostXLSFileNew());
         if (!f.exists()){
@@ -153,6 +158,16 @@ public class Main {
                 f.createNewFile();
             } catch (Exception e){
                 System.out.println("Unable to create output XLS file "+propertyFile.getOutputXLSFileName()+"\n");
+                System.exit(0);
+            }
+        }
+        // Create Output Merge Excel File
+        f = new File(propertyFile.getMergeXLSFileName());
+        if (!f.exists()){
+            try {
+                f.createNewFile();
+            } catch (Exception e){
+                System.out.println("Unable to create Merge XLS file "+propertyFile.getMergeXLSFileName()+"\n");
                 System.exit(0);
             }
         }
